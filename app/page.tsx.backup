@@ -1,0 +1,641 @@
+"use client";
+
+import React, { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
+import { Calendar, TrendingUp, Users, DollarSign, Award, Building2, Scale, ChevronRight, Download } from 'lucide-react';
+import { MetricSelector } from './components/MetricSelector';
+import { MetricsChart } from './components/MetricsChart';
+import { KeyHighlights } from './components/KeyHighlights';
+import { MonthSelector } from './components/MonthSelector';
+import { MonthlyMetricCards } from './components/MonthlyMetricCards';
+
+type CategoryType = "Community Building" | "Technical Excellence" | "Economic Impact" | "Product Market Fit" | "Government Partnership" | "Regulatory Recognition";
+
+type EventType = {
+  event: string;
+  date: string;
+  month: number;
+  metric: string;
+  impact: string;
+  value: number;
+  category: CategoryType;
+  impactScore: number;
+  participants: number;
+  builders?: number;
+  speakers?: number;
+  wins?: number;
+  gdp?: number;
+  volume?: number;
+  startups?: number;
+  attendees?: number;
+};
+
+const CryptoEventsVisualization = () => {
+  const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
+  const [activeView, setActiveView] = useState('timeline');
+  const [selectedMonth, setSelectedMonth] = useState('Nov');
+  const [selectedMetrics, setSelectedMetrics] = useState<Record<string, boolean>>({
+    gdp: true,
+    grants: true,
+    bounties: true,
+    hackathons: false,
+    xFollowers: false,
+    discordUsers: false,
+    eventAttendees: true,
+    irlEvents: false,
+    virtualEvents: false,
+    eventsHosted: false,
+    contributors: false,
+    members: false
+  });
+  const events: Array<{
+    event: string;
+    date: string;
+    month: number;
+    metric: string;
+    impact: string;
+    value: number;
+    category: CategoryType;
+    impactScore: number;
+    participants: number;
+    builders?: number;
+    speakers?: number;
+    wins?: number;
+    gdp?: number;
+    volume?: number;
+    startups?: number;
+    attendees?: number;
+  }> = [
+    {
+      event: "Startup Village",
+      date: "March 2025",
+      month: 3,
+      builders: 900,
+      speakers: 50,
+      metric: "900 Builders, 50 Speakers",
+      impact: 'Shifted the ecosystem from "digital-only" to a physical workforce. Resulted in Ribh Finance processing $4.1M TVP immediately after.',
+      value: 4100000,
+      category: "Community Building" as CategoryType,
+      impactScore: 85,
+      participants: 950
+    },
+    {
+      event: "Redacted Hackathon",
+      date: "July 2025",
+      month: 7,
+      wins: 45,
+      metric: "45 Wins by Nigerian Teams",
+      impact: "Proved deep technical competence. Helius Labs is infrastructure-heavy; winning here proved Nigerians can build backend, not just frontend.",
+      value: 45,
+      category: "Technical Excellence" as CategoryType,
+      impactScore: 78,
+      participants: 200
+    },
+    {
+      event: "The $1M Milestone",
+      date: "August 2025",
+      month: 8,
+      gdp: 1015570,
+      metric: "$1,015,570 Community GDP",
+      impact: 'Validated the "Work-to-Earn" thesis. This represents over $1M of foreign capital injected into the youth economy, bypassing traditional FDI routes.',
+      value: 1015570,
+      category: "Economic Impact" as CategoryType,
+      impactScore: 92,
+      participants: 500
+    },
+    {
+      event: "Ribh Finance Growth",
+      date: "September 2025",
+      month: 9,
+      volume: 12000000,
+      metric: "$12 Million Monthly Volume",
+      impact: "Demonstrated Product-Market Fit for crypto rails. Proved that stablecoins are solving real cross-border payment friction for African SMEs.",
+      value: 12000000,
+      category: "Product Market Fit" as CategoryType,
+      impactScore: 95,
+      participants: 300
+    },
+    {
+      event: "NiYA Startup Pitch",
+      date: "October 2025",
+      month: 10,
+      startups: 17,
+      metric: "17 Startups funded (₦1M each)",
+      impact: "Institutional Legitimacy. The Ministry of Youth adopted the Superteam model to solve unemployment, turning a crypto community into a policy partner.",
+      value: 17000000,
+      category: "Government Partnership" as CategoryType,
+      impactScore: 88,
+      participants: 150
+    },
+    {
+      event: "Solana Summit Africa",
+      date: "November 2025",
+      month: 11,
+      attendees: 800,
+      metric: "800+ Attendees, SEC Presence",
+      impact: "The Coronation. Bridged the gap between regulators and builders. Established Nigeria as a critical market for global Solana players like Birdeye.",
+      value: 800,
+      category: "Regulatory Recognition" as CategoryType,
+      impactScore: 98,
+      participants: 800
+    }
+  ];
+
+  const monthlyData = [
+    { month: 'Jan', monthNum: 1, gdp: 422624, grants: 131800, bounties: 178000, hackathons: 89069, xFollowers: 27400, discordUsers: 7000, eventAttendees: 49200, irlEvents: 12100, virtualEvents: 37100, contributors: 201 },
+    { month: 'Feb', monthNum: 2, gdp: 465020, grants: 134000, bounties: 190800, hackathons: 88393, xFollowers: 28400, discordUsers: 7000, eventAttendees: 53900, irlEvents: 12100, virtualEvents: 41900, contributors: 227 },
+    { month: 'Mar', monthNum: 3, gdp: 551000, grants: 204250, bounties: 205174, hackathons: 88511, xFollowers: 28696, discordUsers: 7000, eventAttendees: 55842, irlEvents: 12100, virtualEvents: 43700, contributors: 230, milestone: 'Startup Village' },
+    { month: 'Apr', monthNum: 4, gdp: 653646, grants: 271350, bounties: 220838, hackathons: 108488, xFollowers: 30800, discordUsers: 7000, eventAttendees: 61900, irlEvents: 12900, virtualEvents: 49000, contributors: 249 },
+    { month: 'May', monthNum: 5, gdp: 817905, grants: 312250, bounties: 290707, hackathons: 161977, xFollowers: 31957, discordUsers: 7000, eventAttendees: 68900, irlEvents: 15200, virtualEvents: 53700, contributors: 492, members: 206 },
+    { month: 'Jun', monthNum: 6, gdp: 878507, grants: 331700, bounties: 325301, hackathons: 168536, xFollowers: 32617, discordUsers: 10000, eventAttendees: 73100, irlEvents: 15300, virtualEvents: 57900, contributors: 516, members: 217 },
+    { month: 'Jul', monthNum: 7, gdp: 935710, grants: 331700, bounties: 366567, hackathons: 168473, xFollowers: 33420, discordUsers: 10402, eventAttendees: 78100, irlEvents: 15300, virtualEvents: 62900, eventsHosted: 2300, contributors: 519, members: 221, milestone: 'Redacted Hackathon' },
+    { month: 'Aug', monthNum: 8, gdp: 1015570, grants: 378050, bounties: 378103, hackathons: 168447, xFollowers: 34100, discordUsers: 10712, eventAttendees: 83000, irlEvents: 16100, virtualEvents: 66900, eventsHosted: 2400, contributors: 510, members: 241, milestone: '$1M Milestone' },
+    { month: 'Sep', monthNum: 9, gdp: 1089375, grants: 399100, bounties: 425965, hackathons: 168340, xFollowers: 35000, discordUsers: 10906, eventAttendees: 87700, irlEvents: 16500, virtualEvents: 71200, eventsHosted: 2600, contributors: 529, members: 204, milestone: 'Ribh Finance' },
+    { month: 'Oct', monthNum: 10, gdp: 1136282, grants: 423250, bounties: 448818, hackathons: 168244, xFollowers: 35100, discordUsers: 11036, eventAttendees: 91600, irlEvents: 16900, virtualEvents: 74700, eventsHosted: 2800, contributors: 528, members: 205, milestone: 'NiYA Pitch' },
+    { month: 'Nov', monthNum: 11, gdp: 1250000, grants: 450000, bounties: 480000, hackathons: 170000, xFollowers: 36500, discordUsers: 11500, eventAttendees: 96400, irlEvents: 17200, virtualEvents: 79200, eventsHosted: 3000, contributors: 550, members: 220, milestone: 'Solana Summit' }
+  ];
+
+  const categoryDistribution = [
+    { name: "Community Building", value: 25, count: 1, color: "#3b82f6" },
+    { name: "Technical Excellence", value: 15, count: 1, color: "#8b5cf6" },
+    { name: "Economic Impact", value: 20, count: 1, color: "#10b981" },
+    { name: "Product Market Fit", value: 20, count: 1, color: "#f59e0b" },
+    { name: "Government Partnership", value: 10, count: 1, color: "#ef4444" },
+    { name: "Regulatory Recognition", value: 10, count: 1, color: "#6366f1" }
+  ];
+
+  const impactGrowthData = events.map((e, idx) => ({
+    month: e.date.split(' ')[0],
+    impactScore: e.impactScore,
+    participants: e.participants,
+    cumulativeImpact: events.slice(0, idx + 1).reduce((sum, ev) => sum + ev.impactScore, 0)
+  }));
+
+  const financialMetrics = [
+    { name: "Startup Village", value: 4.1, label: "$4.1M TVP" },
+    { name: "Community GDP", value: 1.02, label: "$1.02M" },
+    { name: "Ribh Finance", value: 12, label: "$12M Volume" },
+    { name: "NiYA Funding", value: 0.57, label: "₦17M (~$570K)" }
+  ];
+
+
+  const getCategoryColor = (category: CategoryType) => {
+    const colors: Record<CategoryType, string> = {
+      "Community Building": "bg-blue-500",
+      "Technical Excellence": "bg-purple-500",
+      "Economic Impact": "bg-green-500",
+      "Product Market Fit": "bg-yellow-500",
+      "Government Partnership": "bg-red-500",
+      "Regulatory Recognition": "bg-indigo-500"
+    };
+    return colors[category] || "bg-gray-500";
+  };
+
+  const getCategoryIcon = (category: CategoryType) => {
+    const icons: Record<CategoryType, React.JSX.Element> = {
+      "Community Building": <Users className="w-5 h-5" />,
+      "Technical Excellence": <Award className="w-5 h-5" />,
+      "Economic Impact": <DollarSign className="w-5 h-5" />,
+      "Product Market Fit": <TrendingUp className="w-5 h-5" />,
+      "Government Partnership": <Building2 className="w-5 h-5" />,
+      "Regulatory Recognition": <Scale className="w-5 h-5" />
+    };
+    return icons[category] || <TrendingUp className="w-5 h-5" />;
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(2)}M`;
+    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+    return `$${num}`;
+  };
+
+  const formatYAxis = (value: number): string => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
+    return value.toString();
+  };
+
+  const downloadCSV = () => {
+    const headers = ['Month', 'GDP', 'Grants', 'Bounties', 'Hackathons', 'X Followers', 'Discord Users', 'Event Attendees', 'Contributors', 'Members', 'Milestone'];
+    const csvData = monthlyData.map(row => [
+      row.month,
+      row.gdp,
+      row.grants,
+      row.bounties,
+      row.hackathons,
+      row.xFollowers,
+      row.discordUsers,
+      row.eventAttendees,
+      row.contributors || '',
+      row.members || '',
+      row.milestone || ''
+    ]);
+    
+    const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'superteam-nigeria-complete-metrics.csv';
+    a.click();
+  };
+
+  const toggleMetric = (metric: string) => {
+    setSelectedMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
+  };
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-slate-900 p-4 rounded-lg border border-slate-700 shadow-xl">
+          <p className="text-white font-semibold mb-2">{payload[0].payload.month}</p>
+          {payload[0].payload.milestone && (
+            <p className="text-blue-400 text-xs mb-2 font-semibold">🎯 {payload[0].payload.milestone}</p>
+          )}
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }} className="text-sm">
+              {entry.name}: {typeof entry.value === 'number' && entry.value >= 10000 
+                ? formatNumber(entry.value) 
+                : entry.value.toLocaleString()}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
+
+  React.useEffect(() => {
+    if (!selectedEvent && events.length > 0) {
+      setSelectedEvent(events[0]);
+    }
+  }, []);
+
+  return (
+    <div className="w-full h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 overflow-hidden">
+      <div className="h-full flex flex-col">
+        <div className="mb-6 text-center">
+          <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            Superteam Nigeria Ecosystem 2025
+          </h1>
+          <p className="text-slate-300">Community Growth & Major Milestones</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <button 
+              onClick={() => setActiveView('timeline')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${activeView === 'timeline' ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+            >
+              Timeline View
+            </button>
+            <button 
+              onClick={() => setActiveView('metrics')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${activeView === 'metrics' ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+            >
+              Community Metrics
+            </button>
+            <button 
+              onClick={() => setActiveView('monthly')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${activeView === 'monthly' ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+            >
+              Monthly Summary
+            </button>
+            <button 
+              onClick={() => setActiveView('analytics')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${activeView === 'analytics' ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+            >
+              Analytics Dashboard
+            </button>
+          </div>
+        </div>
+
+        {activeView === 'timeline' ? (
+          <div className="flex-1 flex gap-6 overflow-hidden">
+            <div className="w-96 bg-slate-800/50 rounded-xl p-6 overflow-y-auto backdrop-blur">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-blue-400" />
+                Timeline Events
+              </h2>
+              <div className="space-y-3">
+                {events.map((event, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setSelectedEvent(event)}
+                    className={`p-4 rounded-lg cursor-pointer transition-all border-l-4 ${
+                      selectedEvent?.event === event.event
+                        ? `bg-slate-700 ${getCategoryColor(event.category).replace('bg-', 'border-')} shadow-lg scale-105`
+                        : `bg-slate-800/80 border-slate-700 hover:bg-slate-700/80`
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-8 h-8 rounded-full ${getCategoryColor(event.category)} flex items-center justify-center text-white text-xs font-bold`}>
+                            {event.month}
+                          </div>
+                          <h3 className="font-bold text-white text-sm">{event.event}</h3>
+                        </div>
+                        <p className="text-xs text-slate-400 mb-2">{event.date}</p>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 ${selectedEvent?.event === event.event ? 'text-blue-400' : 'text-slate-600'}`} />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className={`px-2 py-1 rounded ${getCategoryColor(event.category)} text-white flex items-center gap-1`}>
+                        {getCategoryIcon(event.category)}
+                        <span className="hidden sm:inline">{event.category}</span>
+                      </div>
+                      <div className="text-slate-400">
+                        Impact: <span className="text-white font-semibold">{event.impactScore}/100</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex-1 bg-slate-800/50 rounded-xl p-8 overflow-y-auto backdrop-blur">
+              {selectedEvent ? (
+                <div className="h-full flex flex-col">
+                  <div className="mb-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h2 className="text-4xl font-bold text-white mb-2">{selectedEvent.event}</h2>
+                        <div className="flex items-center gap-3 text-slate-300">
+                          <Calendar className="w-5 h-5 text-blue-400" />
+                          <span className="text-lg">{selectedEvent.date}</span>
+                        </div>
+                      </div>
+                      <div className={`px-4 py-2 rounded-full ${getCategoryColor(selectedEvent.category)} text-white font-medium flex items-center gap-2`}>
+                        {getCategoryIcon(selectedEvent.category)}
+                        {selectedEvent.category}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 p-4 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingUp className="w-5 h-5 text-blue-400" />
+                          <span className="text-slate-400 text-sm">Impact Score</span>
+                        </div>
+                        <div className="text-3xl font-bold text-white">{selectedEvent.impactScore}<span className="text-xl text-slate-400">/100</span></div>
+                        <div className="mt-2 w-full bg-slate-700 rounded-full h-2">
+                          <div 
+                            className="h-2 rounded-full bg-gradient-to-r from-blue-400 to-blue-600"
+                            style={{ width: `${selectedEvent.impactScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 p-4 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="w-5 h-5 text-purple-400" />
+                          <span className="text-slate-400 text-sm">Participants</span>
+                        </div>
+                        <div className="text-3xl font-bold text-white">{selectedEvent.participants.toLocaleString()}</div>
+                        <div className="text-sm text-slate-400 mt-1">people engaged</div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 p-4 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <DollarSign className="w-5 h-5 text-green-400" />
+                          <span className="text-slate-400 text-sm">Value</span>
+                        </div>
+                        <div className="text-2xl font-bold text-white">
+                          {selectedEvent.value > 1000000 
+                            ? `$${(selectedEvent.value / 1000000).toFixed(1)}M` 
+                            : selectedEvent.value.toLocaleString()}
+                        </div>
+                        <div className="text-sm text-slate-400 mt-1">generated</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-6 p-5 bg-gradient-to-r from-slate-700/50 to-slate-800/50 rounded-lg border border-slate-600">
+                    <h3 className="font-semibold text-blue-400 mb-2 text-lg flex items-center gap-2">
+                      <Award className="w-5 h-5" />
+                      Key Metric
+                    </h3>
+                    <p className="text-white text-xl font-semibold">{selectedEvent.metric}</p>
+                  </div>
+
+                  <div className="flex-1 p-5 bg-gradient-to-br from-slate-700/30 to-slate-800/30 rounded-lg border border-slate-600">
+                    <h3 className="font-semibold text-purple-400 mb-3 text-lg flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      Impact & Ripple Effect
+                    </h3>
+                    <p className="text-slate-200 text-lg leading-relaxed">{selectedEvent.impact}</p>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-700">
+                    <div className="flex items-center justify-between text-sm text-slate-400">
+                      <span>Event {events.findIndex(e => e.event === selectedEvent.event) + 1} of {events.length}</span>
+                      <span>Month {selectedEvent.month} of 2025</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-400">
+                  <p>Select an event from the timeline to view details</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeView === 'metrics' ? (
+          <div className="flex-1 overflow-y-auto">
+            <div className="bg-slate-800/50 rounded-xl p-6 mb-6 backdrop-blur">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-white">Community Growth Metrics (Jan - Nov 2025)</h2>
+                <button
+                  onClick={downloadCSV}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Download size={18} />
+                  Export CSV
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+                {Object.entries({
+                  gdp: 'Community GDP',
+                  grants: 'Grants',
+                  bounties: 'Bounties',
+                  eventAttendees: 'Event Attendees',
+                  xFollowers: 'X Followers',
+                  contributors: 'Contributors'
+                }).map(([key, label]) => (
+                  <label key={key} className="flex items-center space-x-2 text-white cursor-pointer hover:bg-slate-700/50 p-2 rounded transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={selectedMetrics[key]}
+                      onChange={() => toggleMetric(key)}
+                      className="w-4 h-4 accent-blue-500"
+                    />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <ResponsiveContainer width="100%" height={450}>
+                <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                  <XAxis dataKey="month" stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" tickFormatter={formatYAxis} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ color: '#fff' }} />
+                  
+                  {selectedMetrics.gdp && (
+                    <Line type="monotone" dataKey="gdp" stroke="#FFD700" strokeWidth={4} name="Community GDP" dot={{ r: 6, fill: '#FFD700' }} activeDot={{ r: 8 }} />
+                  )}
+                  {selectedMetrics.grants && (
+                    <Line type="monotone" dataKey="grants" stroke="#10B981" strokeWidth={2} name="Grants" dot={{ r: 4 }} />
+                  )}
+                  {selectedMetrics.bounties && (
+                    <Line type="monotone" dataKey="bounties" stroke="#3B82F6" strokeWidth={2} name="Bounties" dot={{ r: 4 }} />
+                  )}
+                  {selectedMetrics.eventAttendees && (
+                    <Line type="monotone" dataKey="eventAttendees" stroke="#F59E0B" strokeWidth={2} name="Event Attendees" dot={{ r: 4 }} />
+                  )}
+                  {selectedMetrics.xFollowers && (
+                    <Line type="monotone" dataKey="xFollowers" stroke="#EC4899" strokeWidth={2} name="X Followers" dot={{ r: 4 }} />
+                  )}
+                  {selectedMetrics.contributors && (
+                    <Line type="monotone" dataKey="contributors" stroke="#EF4444" strokeWidth={2} name="Contributors" dot={{ r: 4 }} />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl shadow-xl">
+                <p className="text-sm text-yellow-100 mb-1">Community GDP Growth</p>
+                <p className="text-4xl font-bold text-white mb-2">{formatNumber(monthlyData[monthlyData.length-1].gdp - monthlyData[0].gdp)}</p>
+                <p className="text-sm text-yellow-100">+{((monthlyData[monthlyData.length-1].gdp / monthlyData[0].gdp - 1) * 100).toFixed(1)}% increase</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-xl">
+                <p className="text-sm text-blue-100 mb-1">Total Event Attendees</p>
+                <p className="text-4xl font-bold text-white mb-2">{monthlyData[monthlyData.length-1].eventAttendees.toLocaleString()}</p>
+                <p className="text-sm text-blue-100">+{((monthlyData[monthlyData.length-1].eventAttendees / monthlyData[0].eventAttendees - 1) * 100).toFixed(1)}% increase</p>
+              </div>
+              <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-xl">
+                <p className="text-sm text-green-100 mb-1">Total Grants Distributed</p>
+                <p className="text-4xl font-bold text-white mb-2">{formatNumber(monthlyData[monthlyData.length-1].grants)}</p>
+                <p className="text-sm text-green-100">+{((monthlyData[monthlyData.length-1].grants / monthlyData[0].grants - 1) * 100).toFixed(1)}% increase</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl shadow-2xl">
+                <h3 className="text-xl font-bold text-white mb-4">Cumulative Impact Score</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={impactGrowthData}>
+                    <defs>
+                      <linearGradient id="colorImpact" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                    <XAxis dataKey="month" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                      labelStyle={{ color: '#fff' }}
+                    />
+                    <Area type="monotone" dataKey="cumulativeImpact" stroke="#3b82f6" fillOpacity={1} fill="url(#colorImpact)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl shadow-2xl">
+                <h3 className="text-xl font-bold text-white mb-4">Impact Category Distribution</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={categoryDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }: any) => name && percent !== undefined ? `${name.split(' ')[0]} ${(percent * 100).toFixed(0)}%` : ''}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {categoryDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl shadow-2xl lg:col-span-2">
+                <h3 className="text-xl font-bold text-white mb-4">Financial Impact Metrics (USD Millions)</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={financialMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                    <XAxis dataKey="name" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                      labelStyle={{ color: '#fff' }}
+                    />
+                    <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl shadow-2xl lg:col-span-2">
+                <h3 className="text-xl font-bold text-white mb-4">Event Participation & Impact Correlation</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={impactGrowthData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                    <XAxis dataKey="month" stroke="#94a3b8" />
+                    <YAxis yAxisId="left" stroke="#94a3b8" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                      labelStyle={{ color: '#fff' }}
+                    />
+                    <Legend />
+                    <Line yAxisId="left" type="monotone" dataKey="participants" stroke="#8b5cf6" strokeWidth={3} name="Participants" />
+                    <Line yAxisId="right" type="monotone" dataKey="impactScore" stroke="#f59e0b" strokeWidth={3} name="Impact Score" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg text-center transform hover:scale-105 transition-all">
+                <Users className="w-10 h-10 mx-auto mb-3 text-white" />
+                <div className="text-3xl font-bold text-white">2,900+</div>
+                <div className="text-sm text-blue-100">Total Participants</div>
+              </div>
+              <div className="p-6 bg-gradient-to-br from-green-500 to-green-700 rounded-xl shadow-lg text-center transform hover:scale-105 transition-all">
+                <DollarSign className="w-10 h-10 mx-auto mb-3 text-white" />
+                <div className="text-3xl font-bold text-white">$17.7M</div>
+                <div className="text-sm text-green-100">Total Value Generated</div>
+              </div>
+              <div className="p-6 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-lg text-center transform hover:scale-105 transition-all">
+                <Award className="w-10 h-10 mx-auto mb-3 text-white" />
+                <div className="text-3xl font-bold text-white">536</div>
+                <div className="text-sm text-purple-100">Total Impact Score</div>
+              </div>
+              <div className="p-6 bg-gradient-to-br from-red-500 to-red-700 rounded-xl shadow-lg text-center transform hover:scale-105 transition-all">
+                <Building2 className="w-10 h-10 mx-auto mb-3 text-white" />
+                <div className="text-3xl font-bold text-white">6</div>
+                <div className="text-sm text-red-100">Major Milestones</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CryptoEventsVisualization;

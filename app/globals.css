@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Enforced Green Theme */
+  --background: #020617; /* Very dark base */
+  --background-gradient-start: #022c22; /* Deep emerald */
+  --background-gradient-end: #020617;
+  
+  --foreground: #ffffff;
+  
+  /* Glassmorphic Green Surface */
+  --surface: rgba(6, 78, 59, 0.4); /* emerald-900 with opacity */
+  --surface-highlight: rgba(6, 78, 59, 0.6);
+  --border: rgba(52, 211, 153, 0.3); /* emerald-400 with opacity */
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8; /* slate-400 */
+  --text-accent: #34d399; /* emerald-400 */
+  
+  /* Primary Brand Colors */
+  --primary: #10b981;
+  --primary-dark: #047857;
+  --primary-glow: rgba(16, 185, 129, 0.2);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-surface-highlight: var(--surface-highlight);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-accent: var(--text-accent);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Dark mode background gradient */
+body {
+  background: radial-gradient(circle at 50% 0%, var(--background-gradient-start), var(--background-gradient-end));
+  min-height: 100vh;
+}
+
+/* Glass Card Utility Class */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Global Custom Cursors */
+body {
+  cursor: url('/custom-cursor.svg') 10 2, auto;
+}
+
+a, button, [role="button"], .cursor-pointer, input[type="checkbox"], input[type="radio"], select {
+  cursor: url('/custom-pointer.svg') 10 2, pointer !important;
+}
+
+.sidebar-cursor {
+  cursor: url('/hand-cursor.svg') 10 2, pointer !important;
+}
+
+/* Logo Scanning Animation */
+@keyframes scan-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.logo-scanner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.logo-scanner::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0%, transparent 70%, #10b981 100%);
+  animation: scan-rotate 3s linear infinite;
+  pointer-events: none;
+}
+
+.logo-scanner::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  pointer-events: none;
+}
+
+.logo-scanner img {
+  position: relative;
+  z-index: 10;
+  border-radius: 50%;
+  background: var(--background); /* Ensure background behind logo */
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  border-color: #1e293b;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  border-color: #e2e8f0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #059669 0%, #047857 100%);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #047857 0%, #065f46 100%);
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #10b981 transparent;
+}
+
+[data-theme="dark"] * {
+  scrollbar-color: #10b981 #1e293b;
+}
+
+[data-theme="light"] * {
+  scrollbar-color: #10b981 #e2e8f0;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
